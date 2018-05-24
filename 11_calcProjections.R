@@ -11,7 +11,7 @@ g <- gc(reset = TRUE)
 rm(list = ls())
 options(scipen = 999)
 
-# Functions to use☻
+# Functions to use
 zonalSt <- function(crn, ftr, adm, vr){
   # Current
   crn <- grep(vr, crn, value = T) %>% raster()
@@ -39,14 +39,14 @@ zonalSt <- function(crn, ftr, adm, vr){
   
   # Join with the shapefile
   sf <- st_as_sf(as(adm, 'SpatialPolygonsDataFrame'))
-  sf.dif <- inner_join(sf, znl.dif, by = c('OBJECTID' = 'zone')) %>% dplyr::select(OBJECTID, NAME_1, mean) %>% mutate(mean = round(mean/10, 2))
-  sf.prc <- inner_join(sf, znl.prc, by = c('OBJECTID' = 'zone')) %>% dplyr::select(OBJECTID, NAME_1, mean) %>% mutate(mean = round(mean/10, 2))
+  sf.dif <- inner_join(sf, znl.dif, by = c('OBJECTID' = 'zone')) %>% dplyr::select(OBJECTID, reg, mean) %>% mutate(mean = round(mean/10, 2))
+  sf.prc <- inner_join(sf, znl.prc, by = c('OBJECTID' = 'zone')) %>% dplyr::select(OBJECTID, reg, mean) %>% mutate(mean = round(mean/10, 2))
   
   print('To Write the final files')
   
   # Write files
-  writeRaster(dif, paste0('../_data/_asc/_znl/dif_', vr), overwrite = FALSE)
-  writeRaster(prc, paste0('../_data/_asc/_znl/prc_', vr), overwrite = FALSE)
+  writeRaster(dif, paste0('../_data/_asc/_znl/dif_', vr), overwrite = TRUE)
+  writeRaster(prc, paste0('../_data/_asc/_znl/prc_', vr), overwrite = TRUE)
   write_sf(sf.dif, dsn = '../_data/_shp', layer = paste0('dif_', vr), driver = 'ESRI Shapefile', update = TRUE)
   write_sf(sf.prc, dsn = '../_data/_shp', layer = paste0('prc_', vr), driver = 'ESRI Shapefile', update = TRUE)
   
@@ -64,7 +64,9 @@ fls.ftr <- paste0(path_climate, '/_future/_rcp60/_asc/_2050/', gcms) %>%
   list.files(full.names = T, pattern = '.asc$') %>% 
   grep('bio', ., value = T) %>%
   mixedsort()
-gtm <- getData('GADM', country = 'GTM', level = 1)
+gtm <- shapefile('../_data/_shp/_base/regiones.shp')
+gtm <- aggregate(gtm, 'reg')
+gtm@data$OBJECTID <- as.numeric(1:nrow(gtm@data))
 
 # Apply the function
 bio_1 <- zonalSt(crn = fls.crn, ftr = fls.ftr, adm = gtm, vr = 'bio_1.asc')
