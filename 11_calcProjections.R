@@ -24,9 +24,13 @@ zonalSt <- function(crn, ftr, adm, vr){
   ftr <- mean(ftr)
   ftr <- raster::crop(ftr, adm) %>% raster::mask(adm)
   
+  print('To calculate the difference')
+  
   # Difference
   dif <- ftr - crn
   prc <- (dif / crn) * 100
+  
+  print('To rasterize')
   
   # Rasterization and zonal statistics
   lyr <- rasterize(adm, dif, field = 'OBJECTID')
@@ -38,11 +42,13 @@ zonalSt <- function(crn, ftr, adm, vr){
   sf.dif <- inner_join(sf, znl.dif, by = c('OBJECTID' = 'zone')) %>% dplyr::select(OBJECTID, NAME_1, mean) %>% mutate(mean = round(mean/10, 2))
   sf.prc <- inner_join(sf, znl.prc, by = c('OBJECTID' = 'zone')) %>% dplyr::select(OBJECTID, NAME_1, mean) %>% mutate(mean = round(mean/10, 2))
   
+  print('To Write the final files')
+  
   # Write files
   writeRaster(dif, paste0('../_data/_asc/_znl/dif_', vr), overwrite = FALSE)
   writeRaster(prc, paste0('../_data/_asc/_znl/prc_', vr), overwrite = FALSE)
   write_sf(sf.dif, dsn = '../_data/_shp', layer = paste0('dif_', vr), driver = 'ESRI Shapefile', update = TRUE)
-  write_sf(sf.prc, dsn = '../_data/_shp', layer = paste0('dif_', vr), driver = 'ESRI Shapefile', update = TRUE)
+  write_sf(sf.prc, dsn = '../_data/_shp', layer = paste0('prc_', vr), driver = 'ESRI Shapefile', update = TRUE)
   
   print(paste0('Done ', vr))
 }
