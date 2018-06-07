@@ -83,3 +83,20 @@ write.csv(dptos, '../_data/_tbl/_slp/_znl/dptos.csv', row.names = FALSE)
 write.csv(pxls, '../_data/_tbl/_slp/_znl/pxls.csv', row.names = FALSE)
 
 print('Done!')
+
+# Join between the table and the shapefiles 
+dptos <- read.csv('../_data/_tbl/_slp/_znl/dptos.csv')
+pxls <- read.csv('../_data/_tbl/_slp/_znl/pxls.csv')
+
+gtm1 <- st_as_sf(gtm1)
+
+# Dptos
+dptos.sf <- inner_join(gtm1, dptos, by = c('NAME_1' = 'NAME_1')) 
+dptos.sf <- as(dptos.sf, 'Spatial')
+
+# Pixels
+pxls.sf <- inner_join(gtm1, pxls, by = c('NAME_1' = 'NAME_1'))
+pxls.sf <- as(pxls.sf, 'Spatial')
+
+writeOGR(dptos.sf, dsn = '../_data/_shp/_slp', layer = 'slp_byDpto', driver = 'ESRI Shapefile')
+writeOGR(pxls.sf, dsn = '../_data/_shp/_slp', layer = 'slp_byPixel', driver = 'ESRI Shapefile')
